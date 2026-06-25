@@ -87,7 +87,14 @@ export default function ChatWindow() {
     <div className="flex-1 flex flex-col bg-white border-r border-gray-200">
       <div className="h-16 border-b border-gray-200 flex items-center justify-between px-6 bg-white shrink-0">
         <div className="flex items-center">
-          <img src={customer.avatar} alt={customer.name} className="w-10 h-10 rounded-full mr-3" />
+          <img 
+            src={customer.avatar} 
+            alt={customer.name} 
+            className="w-10 h-10 rounded-full mr-3" 
+            onError={(e) => {
+              e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.name)}&background=random`;
+            }}
+          />
           <div>
             <h3 className="font-semibold text-gray-800">{customer.name}</h3>
             <div className="text-xs text-blue-600 flex items-center">

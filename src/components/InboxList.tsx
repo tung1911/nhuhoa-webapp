@@ -88,7 +88,14 @@ export default function InboxList() {
               )}
               
               <div className="flex items-start space-x-3">
-                <img src={customer?.avatar} alt={customer?.name} className="w-10 h-10 rounded-full" />
+                <img 
+                  src={customer?.avatar} 
+                  alt={customer?.name} 
+                  className="w-10 h-10 rounded-full" 
+                  onError={(e) => {
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(customer?.name || 'User')}&background=random`;
+                  }}
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline">
                     <h4 className={cn("text-sm truncate", conv.unread ? "font-bold text-gray-900" : "font-medium text-gray-800")}>
