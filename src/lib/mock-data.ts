@@ -9,11 +9,11 @@ export const mockUser: User = {
 };
 
 export const mockPages: FacebookPage[] = [
-  { id: 'p1', name: 'Page Nâng mũi Như Hoa', isVisible: true, isAiEnabled: true },
-  { id: 'p2', name: 'Page Da liễu Như Hoa', isVisible: true, isAiEnabled: false },
-  { id: 'p3', name: 'Page Nha khoa Như Hoa', isVisible: true, isAiEnabled: true },
-  { id: 'p4', name: 'Spa Như Hoa', isVisible: true, isAiEnabled: false },
-  { id: 'p5', name: 'Tuyển dụng Như Hoa', isVisible: false, isAiEnabled: false },
+  { id: 'p1', name: 'Page Nâng mũi Như Hoa', isVisible: true, isAiEnabled: true, avatar: '', isConnected: true },
+  { id: 'p2', name: 'Page Da liễu Như Hoa', isVisible: true, isAiEnabled: false, avatar: '', isConnected: true },
+  { id: 'p3', name: 'Page Nha khoa Như Hoa', isVisible: true, isAiEnabled: true, avatar: '', isConnected: true },
+  { id: 'p4', name: 'Spa Như Hoa', isVisible: true, isAiEnabled: false, avatar: '', isConnected: true },
+  { id: 'p5', name: 'Tuyển dụng Như Hoa', isVisible: false, isAiEnabled: false, avatar: '', isConnected: true },
 ];
 
 export const mockCustomers: Customer[] = [
