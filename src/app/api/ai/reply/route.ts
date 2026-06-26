@@ -38,8 +38,9 @@ Lịch sử trò chuyện:
     const text = response.text().trim();
 
     return NextResponse.json({ reply: text });
-  } catch (error: any) {
-    console.error('Gemini API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+    } catch (error: any) {
+      console.error('Gemini API Error:', error);
+      const keyPrefix = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.substring(0, 8) + '...' : 'NONE';
+      return NextResponse.json({ error: `[Key: ${keyPrefix}] ${error.message}` }, { status: 500 });
+    }
 }
