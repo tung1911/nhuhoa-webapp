@@ -39,26 +39,24 @@ ${isAutoReply ? '3. Vì bạn đang trả lời tự động, hãy ưu tiên xoa
     let reply = '';
     
     try {
+      // Dùng openrouter/free làm mặc định để tự động chọn model rảnh rỗi nhất
       const completion = await openai.chat.completions.create({
-        model: 'meta-llama/llama-3.3-70b-instruct:free',
+        model: 'openrouter/free',
         messages: openAIMessages,
         temperature: 0.7,
         max_tokens: 300,
       });
       reply = completion.choices[0]?.message?.content?.trim() || '';
     } catch (e: any) {
-      if (e.message?.includes('404')) {
-        // Fallback to auto free model
-        const fallbackCompletion = await openai.chat.completions.create({
-          model: 'openrouter/free',
-          messages: openAIMessages,
-          temperature: 0.7,
-          max_tokens: 300,
-        });
-        reply = fallbackCompletion.choices[0]?.message?.content?.trim() || '';
-      } else {
-        throw e;
-      }
+      // Dự phòng nếu model free bị quá tải (429) hoặc lỗi
+      console.warn("Lỗi model chính, thử model dự phòng...", e.message);
+      const fallbackCompletion = await openai.chat.completions.create({
+        model: 'meta-llama/llama-3.2-3b-instruct:free',
+        messages: openAIMessages,
+        temperature: 0.7,
+        max_tokens: 300,
+      });
+      reply = fallbackCompletion.choices[0]?.message?.content?.trim() || '';
     }
 
     if (!reply) {
