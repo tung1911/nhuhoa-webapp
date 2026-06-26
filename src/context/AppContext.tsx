@@ -85,8 +85,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         let url: string | null = `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,picture,access_token&limit=100&access_token=${currentUser.accessToken}`;
         
         while (url) {
-          const accountsResponse = await fetch(url);
-          const accountsData = await accountsResponse.json();
+          const accountsResponse: Response = await fetch(url as string);
+          const accountsData: any = await accountsResponse.json();
           
           if (accountsData.error) {
             console.error("Facebook API Error:", accountsData.error);
