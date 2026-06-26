@@ -60,6 +60,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' });
+  const pagesRef = React.useRef<FacebookPage[]>([]);
+
+  useEffect(() => {
+    pagesRef.current = pages;
+  }, [pages]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -70,12 +75,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const fetchFacebookData = async (currentUser: User) => {
+  const fetchFacebookData = async (currentUser: User, skipAccountsFetch = false) => {
     try {
-      // Chỉ lấy danh sách trang nếu chưa có
-      let currentPages = pages;
-      if (pages.length === 0) {
-        const res = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,picture,access_token&access_token=${currentUser.accessToken}`);
+      let currentPages = [...pagesRef.current];
+      
+      if (!skipAccountsFetch) {
+        // Luôn gọi API để cập nhật trang mới, dùng limit=100 để lấy tối đa trang
+        const res = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,picture,access_token&limit=100&access_token=${currentUser.accessToken}`);
         const data = await res.json();
         
         if (data.error) {
@@ -84,19 +90,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             logout();
             window.location.href = '/login';
           }
-          return;
-        }
-        
-        if (data && data.data) {
-          currentPages = data.data.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            avatar: p.picture?.data?.url || `https://graph.facebook.com/${p.id}/picture?type=normal`,
-            isConnected: true,
-            isVisible: true,
-            isAiEnabled: true,
-            pageAccessToken: p.access_token
-          }));
+        } else if (data && data.data) {
+          currentPages = data.data.map((p: any) => {
+            const existing = pagesRef.current.find(cp => cp.id === p.id);
+            if (existing) {
+              return {
+                ...existing,
+                pageAccessToken: p.access_token,
+                name: p.name,
+                avatar: p.picture?.data?.url || `https://graph.facebook.com/${p.id}/picture?type=normal`
+              };
+            } else {
+              return {
+                id: p.id,
+                name: p.name,
+                avatar: p.picture?.data?.url || `https://graph.facebook.com/${p.id}/picture?type=normal`,
+                isConnected: true,
+                isVisible: false,
+                isAiEnabled: false,
+                pageAccessToken: p.access_token
+              };
+            }
+          });
           setPages(currentPages);
         }
       }
@@ -107,6 +122,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         let allCustomers: Customer[] = [];
         
         for (const page of currentPages) {
+          if (!page.isVisible) continue;
+          
           try {
             const convRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/conversations?fields=id,updated_time,participants{id,name,picture},messages.limit(30){id,message,created_time,from}&access_token=${page.pageAccessToken}`);
             const convData = await convRes.json();
@@ -197,13 +214,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user?.accessToken) {
-      // Gọi lần đầu
-      fetchFacebookData(user);
+      // Gọi lần đầu, lấy toàn bộ thông tin
+      fetchFacebookData(user, false);
       
-      // Giảm tần suất Polling xuống 60 giây để tránh bị Facebook khóa API
+      let tick = 0;
+      // Quét mỗi 5 giây cho tin nhắn để đạt tốc độ "Real-time" tốt nhất
       const interval = setInterval(() => {
-        fetchFacebookData(user);
-      }, 60000);
+        tick++;
+        // Cứ mỗi 12 ticks (60 giây), mới quét lại danh sách trang (/me/accounts) để tránh tốn quota
+        const shouldFetchAccounts = tick % 12 === 0;
+        fetchFacebookData(user, !shouldFetchAccounts);
+      }, 5000);
       
       return () => clearInterval(interval);
     }

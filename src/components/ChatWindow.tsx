@@ -162,7 +162,7 @@ export default function ChatWindow() {
             className="flex items-center px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-100"
           >
             <Zap className="w-3.5 h-3.5 mr-1" fill="currentColor" />
-            Gợi ý AI
+            AI Chat
           </button>
           <button className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200 rounded-full hover:bg-gray-200">
             Gửi nhanh

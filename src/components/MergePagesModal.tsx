@@ -29,7 +29,7 @@ export default function MergePagesModal({ isOpen, onClose }: MergePagesModalProp
               <tr>
                 <th className="px-4 py-3 rounded-tl-md">Tên Page</th>
                 <th className="px-4 py-3 text-center">Hiển thị (Inbox)</th>
-                <th className="px-4 py-3 text-center rounded-tr-md">Gợi ý AI</th>
+                <th className="px-4 py-3 text-center rounded-tr-md">AI Chat</th>
               </tr>
             </thead>
             <tbody>

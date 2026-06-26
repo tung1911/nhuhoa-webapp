@@ -5,7 +5,7 @@ const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localho
 export function getFacebookLoginUrl() {
   const redirectUri = `${NEXT_PUBLIC_BASE_URL}/api/auth/callback`;
   const scope = 'public_profile,pages_show_list,pages_manage_metadata,pages_messaging';
-  return `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&response_type=code`;
+  return `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&response_type=code&auth_type=rerequest`;
 }
 
 export async function getAccessTokenFromCode(code: string) {
