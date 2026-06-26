@@ -77,12 +77,14 @@ export default function ChatWindow() {
       const data = await res.json();
       if (data.reply) {
         setInputText(data.reply);
+      } else if (data.error) {
+        setInputText('LỖI GOOGLE AI: ' + data.error);
       } else {
-        setInputText('');
+        setInputText('Lỗi không xác định từ AI');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setInputText('');
+      setInputText('LỖI KẾT NỐI: ' + err.message);
     } finally {
       setIsAiLoading(false);
     }
