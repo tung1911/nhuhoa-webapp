@@ -36,14 +36,30 @@ ${isAutoReply ? '3. Vì bạn đang trả lời tự động, hãy ưu tiên xoa
       });
     });
 
-    const completion = await openai.chat.completions.create({
-      model: 'meta-llama/llama-3-8b-instruct:free',
-      messages: openAIMessages,
-      temperature: 0.7,
-      max_tokens: 300,
-    });
-
-    const reply = completion.choices[0]?.message?.content?.trim();
+    let reply = '';
+    
+    try {
+      const completion = await openai.chat.completions.create({
+        model: 'meta-llama/llama-3.3-70b-instruct:free',
+        messages: openAIMessages,
+        temperature: 0.7,
+        max_tokens: 300,
+      });
+      reply = completion.choices[0]?.message?.content?.trim() || '';
+    } catch (e: any) {
+      if (e.message?.includes('404')) {
+        // Fallback to auto free model
+        const fallbackCompletion = await openai.chat.completions.create({
+          model: 'openrouter/free',
+          messages: openAIMessages,
+          temperature: 0.7,
+          max_tokens: 300,
+        });
+        reply = fallbackCompletion.choices[0]?.message?.content?.trim() || '';
+      } else {
+        throw e;
+      }
+    }
 
     if (!reply) {
       throw new Error("Empty response from AI");
