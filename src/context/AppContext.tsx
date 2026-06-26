@@ -85,21 +85,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         let url: string | null = `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,picture,access_token&limit=100&access_token=${currentUser.accessToken}`;
         
         while (url) {
-          const res = await fetch(url);
-          const data = await res.json();
+          const accountsResponse = await fetch(url);
+          const accountsData = await accountsResponse.json();
           
-          if (data.error) {
-            console.error("Facebook API Error:", data.error);
-            if (data.error.code === 190) {
+          if (accountsData.error) {
+            console.error("Facebook API Error:", accountsData.error);
+            if (accountsData.error.code === 190) {
               logout();
               window.location.href = '/login';
             }
             break;
           }
           
-          if (data && data.data) {
-            allAccounts = [...allAccounts, ...data.data];
-            url = data.paging?.next || null;
+          if (accountsData && accountsData.data) {
+            allAccounts = [...allAccounts, ...accountsData.data];
+            url = accountsData.paging?.next || null;
           } else {
             url = null;
           }
