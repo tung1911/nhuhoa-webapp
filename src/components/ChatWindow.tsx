@@ -78,7 +78,7 @@ export default function ChatWindow() {
       if (data.reply) {
         setInputText(data.reply);
       } else if (data.error) {
-        setInputText('LỖI GOOGLE AI: ' + data.error);
+        setInputText('LỖI OPENAI: ' + data.error);
       } else {
         setInputText('Lỗi không xác định từ AI');
       }
