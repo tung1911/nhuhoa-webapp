@@ -62,7 +62,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' });
   const pagesRef = React.useRef<FacebookPage[]>([]);
   const processedMessageIdsRef = React.useRef<Set<string>>(new Set());
-  const isInitialLoadRef = React.useRef<boolean>(true);
+  const pageInitializedRef = React.useRef<Set<string>>(new Set());
 
   useEffect(() => {
     pagesRef.current = pages;
@@ -185,8 +185,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   if (!processedMessageIdsRef.current.has(latestMsg.id)) {
                     processedMessageIdsRef.current.add(latestMsg.id);
                     
-                    // Chỉ kích hoạt Auto Reply khi CÓ TIN NHẮN MỚI TỚI trong lúc mở app (bỏ qua lần load đầu tiên)
-                    if (!isInitialLoadRef.current && page.isAiEnabled && isLatestFromCustomer) {
+                    // Chỉ kích hoạt Auto Reply khi trang đã được nạp dữ liệu lần đầu
+                    const isPageInitialized = pageInitializedRef.current.has(page.id);
+                    
+                    if (isPageInitialized && page.isAiEnabled && isLatestFromCustomer) {
                       const messageHistory = conv.messages.data.slice(0, 10).reverse().map((m: any) => ({
                         sender: m.from.id === page.id ? 'page' : 'customer',
                         text: m.message || ''
@@ -273,9 +275,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           setMessages(allMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()));
         }
         
-        // Đánh dấu đã qua lần tải đầu tiên
-        if (isInitialLoadRef.current) {
-          isInitialLoadRef.current = false;
+        // Đánh dấu các trang đã nạp xong lần đầu
+        for (const page of currentPages) {
+          if (page.isVisible && !pageInitializedRef.current.has(page.id)) {
+            pageInitializedRef.current.add(page.id);
+          }
         }
       }
     } catch (err) {
