@@ -210,9 +210,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                               message: { text: data.reply },
                               messaging_type: "RESPONSE"
                             })
+                          }).catch(err => {
+                            console.error("Lỗi gửi tin nhắn FB:", err);
+                            // Xóa ID để cho phép thử lại
+                            processedMessageIdsRef.current.delete(latestMsg.id);
                           });
+                        } else {
+                          console.error("AI không trả về kết quả (Lỗi API):", data.error);
+                          // Xóa ID khỏi danh sách đã xử lý để hệ thống tự động thử lại vào 5 giây sau!
+                          processedMessageIdsRef.current.delete(latestMsg.id);
                         }
-                      }).catch(err => console.error("Auto reply error:", err));
+                      }).catch(err => {
+                        console.error("Auto reply error:", err);
+                        // Xóa ID để cho phép thử lại
+                        processedMessageIdsRef.current.delete(latestMsg.id);
+                      });
                     }
                   }
 
