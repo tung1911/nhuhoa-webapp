@@ -21,6 +21,8 @@ export default function ChatWindow() {
   } = useAppContext();
   
   const [inputText, setInputText] = useState('');
+  const [showTags, setShowTags] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeConv = conversations.find(c => c.id === activeConversationId);
@@ -50,9 +52,40 @@ export default function ChatWindow() {
     }
   };
 
-  const handleAiSuggestion = () => {
-    const randomSuggestion = MOCK_AI_SUGGESTIONS[Math.floor(Math.random() * MOCK_AI_SUGGESTIONS.length)];
-    setInputText(randomSuggestion);
+  const handleAiSuggestion = async () => {
+    if (!activeConv || !customer || isAiLoading) return;
+    
+    setIsAiLoading(true);
+    setInputText('AI đang suy nghĩ...');
+    
+    try {
+      const messageHistory = convMessages.slice(-10).map(m => ({
+        sender: m.senderId === customer.id ? 'customer' : 'page',
+        text: m.text
+      }));
+
+      const res = await fetch('/api/ai/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: messageHistory,
+          customerName: customer.name,
+          isAutoReply: false
+        })
+      });
+      
+      const data = await res.json();
+      if (data.reply) {
+        setInputText(data.reply);
+      } else {
+        setInputText('');
+      }
+    } catch (err) {
+      console.error(err);
+      setInputText('');
+    } finally {
+      setIsAiLoading(false);
+    }
   };
 
   const PREDEFINED_TAGS = [
@@ -169,6 +202,7 @@ export default function ChatWindow() {
         <div className="flex space-x-2 mb-2">
           <button 
             onClick={handleAiSuggestion}
+            disabled={isAiLoading}
             className="flex items-center px-3 py-1.5 text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-100"
           >
             <Zap className="w-3.5 h-3.5 mr-1" fill="currentColor" />

@@ -61,6 +61,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' });
   const pagesRef = React.useRef<FacebookPage[]>([]);
+  const processedMessageIdsRef = React.useRef<Set<string>>(new Set());
 
   useEffect(() => {
     pagesRef.current = pages;
@@ -175,7 +176,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   updatedAt: conv.updated_time,
                 });
                 
-                if (conv.messages?.data) {
+                if (conv.messages?.data && conv.messages.data.length > 0) {
+                  const latestMsg = conv.messages.data[0];
+                  const isLatestFromCustomer = latestMsg.from.id !== page.id;
+                  const msgAgeMs = Date.now() - new Date(latestMsg.created_time).getTime();
+                  
+                  if (page.isAiEnabled && isLatestFromCustomer && msgAgeMs < 30000 && !processedMessageIdsRef.current.has(latestMsg.id)) {
+                    processedMessageIdsRef.current.add(latestMsg.id);
+                    
+                    // Xử lý Auto Reply ngầm
+                    const messageHistory = conv.messages.data.slice(0, 10).reverse().map((m: any) => ({
+                      sender: m.from.id === page.id ? 'page' : 'customer',
+                      text: m.message || ''
+                    })).filter((m: any) => m.text);
+                    
+                    fetch('/api/ai/reply', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        messages: messageHistory,
+                        customerName: customerName,
+                        isAutoReply: true
+                      })
+                    }).then(res => res.json()).then(data => {
+                      if (data.reply) {
+                        fetch(`https://graph.facebook.com/v19.0/${page.id}/messages?access_token=${page.pageAccessToken}`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            recipient: { id: customerId },
+                            message: { text: data.reply },
+                            messaging_type: "RESPONSE"
+                          })
+                        });
+                      }
+                    }).catch(err => console.error("Auto reply error:", err));
+                  }
+
                   conv.messages.data.forEach((msg: any) => {
                     const isFromPage = msg.from.id === page.id;
                     
