@@ -13,7 +13,11 @@ export default function CustomerProfile() {
   const page = activeConv ? pages.find(p => p.id === activeConv.pageId) : null;
 
   if (!activeConversationId || !activeConv || !customer) {
-    return <div className="w-80 bg-white p-6 shrink-0 border-l border-gray-200"></div>;
+    return (
+      <div className="w-80 bg-white p-6 flex flex-col shrink-0 border-l border-gray-200">
+        <MotivationQuote />
+      </div>
+    );
   }
 
   return (
