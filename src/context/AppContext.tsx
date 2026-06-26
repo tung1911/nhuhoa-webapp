@@ -62,6 +62,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' });
   const pagesRef = React.useRef<FacebookPage[]>([]);
   const processedMessageIdsRef = React.useRef<Set<string>>(new Set());
+  const isInitialLoadRef = React.useRef<boolean>(true);
 
   useEffect(() => {
     pagesRef.current = pages;
@@ -184,8 +185,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   if (!processedMessageIdsRef.current.has(latestMsg.id)) {
                     processedMessageIdsRef.current.add(latestMsg.id);
                     
-                    // Xử lý Auto Reply ngầm (Cho phép lệch đồng hồ lên đến 5 phút)
-                    if (page.isAiEnabled && isLatestFromCustomer && Math.abs(msgAgeMs) < 300000) {
+                    // Chỉ kích hoạt Auto Reply khi CÓ TIN NHẮN MỚI TỚI trong lúc mở app (bỏ qua lần load đầu tiên)
+                    if (!isInitialLoadRef.current && page.isAiEnabled && isLatestFromCustomer) {
                       const messageHistory = conv.messages.data.slice(0, 10).reverse().map((m: any) => ({
                         sender: m.from.id === page.id ? 'page' : 'customer',
                         text: m.message || ''
@@ -258,6 +259,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         
         if (allMessages.length > 0) {
           setMessages(allMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()));
+        }
+        
+        // Đánh dấu đã qua lần tải đầu tiên
+        if (isInitialLoadRef.current) {
+          isInitialLoadRef.current = false;
         }
       }
     } catch (err) {
