@@ -80,18 +80,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       let currentPages = [...pagesRef.current];
       
       if (!skipAccountsFetch) {
-        // Luôn gọi API để cập nhật trang mới, dùng limit=100 để lấy tối đa trang
-        const res = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,picture,access_token&limit=100&access_token=${currentUser.accessToken}`);
-        const data = await res.json();
+        let allAccounts: any[] = [];
+        let url: string | null = `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,picture,access_token&limit=100&access_token=${currentUser.accessToken}`;
         
-        if (data.error) {
-          console.error("Facebook API Error:", data.error);
-          if (data.error.code === 190) {
-            logout();
-            window.location.href = '/login';
+        while (url) {
+          const res = await fetch(url);
+          const data = await res.json();
+          
+          if (data.error) {
+            console.error("Facebook API Error:", data.error);
+            if (data.error.code === 190) {
+              logout();
+              window.location.href = '/login';
+            }
+            break;
           }
-        } else if (data && data.data) {
-          currentPages = data.data.map((p: any) => {
+          
+          if (data && data.data) {
+            allAccounts = [...allAccounts, ...data.data];
+            url = data.paging?.next || null;
+          } else {
+            url = null;
+          }
+        }
+        
+        if (allAccounts.length > 0) {
+          currentPages = allAccounts.map((p: any) => {
             const existing = pagesRef.current.find(cp => cp.id === p.id);
             if (existing) {
               return {
@@ -125,7 +139,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (!page.isVisible) continue;
           
           try {
-            const convRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/conversations?fields=id,updated_time,participants{id,name,picture},messages.limit(30){id,message,created_time,from}&access_token=${page.pageAccessToken}`);
+            const convRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/conversations?fields=id,updated_time,participants{id,name,picture},messages.limit(50){id,message,created_time,from}&limit=50&access_token=${page.pageAccessToken}`);
             const convData = await convRes.json();
             
             if (convData.error) {
