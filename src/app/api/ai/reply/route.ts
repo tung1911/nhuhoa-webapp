@@ -95,6 +95,18 @@ ${isAutoReply ? '- Vì bạn đang trả lời tự động, hãy tập trung xo
       throw new Error("Empty response from AI");
     }
 
+    // Bộ lọc an toàn: Tuyệt đối không cho phép gửi các thông báo lỗi hoặc văn phong AI ra cho khách
+    const forbiddenPhrases = ['user safety', 'ai language model', 'trí tuệ nhân tạo', 'ngôn ngữ ai', 'tôi là một ai', 'tôi là ai', 'i am an ai', 'i am a large language model'];
+    const lowerReply = reply.toLowerCase();
+    
+    for (const phrase of forbiddenPhrases) {
+      if (lowerReply.includes(phrase)) {
+        // Nếu phát hiện AI đang bị "ngáo" hoặc báo lỗi, tự động đổi sang câu trả lời an toàn
+        reply = "Dạ chị đợi em một chút, bác sĩ bên em đang xem xét tình trạng và sẽ tư vấn chi tiết cho chị ngay ạ.";
+        break;
+      }
+    }
+
     return NextResponse.json({ reply: reply });
   } catch (error: any) {
     console.error('OpenAI/OpenRouter API Error:', error);
