@@ -52,7 +52,10 @@ export default function InboxList() {
   }
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full shrink-0">
+    <div className={cn(
+      "bg-white border-r border-gray-200 flex-col h-full shrink-0",
+      activeConversationId ? "hidden md:flex md:w-80" : "flex w-full md:w-80"
+    )}>
       <div className="p-4 border-b border-gray-200">
         <div className="relative">
           <input

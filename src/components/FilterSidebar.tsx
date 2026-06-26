@@ -19,7 +19,7 @@ export default function FilterSidebar() {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full overflow-y-auto shrink-0">
+    <div className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col h-full overflow-y-auto shrink-0">
       <div className="p-4 border-b border-gray-200 font-semibold text-gray-700">Bộ lọc</div>
       
       <div className="p-4 space-y-2">

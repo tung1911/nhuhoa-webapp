@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Image as ImageIcon, Paperclip, Smile, Zap, Tag, MoreVertical } from 'lucide-react';
+import { Send, Image as ImageIcon, Paperclip, Smile, Zap, Tag, MoreVertical, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,7 @@ export default function ChatWindow() {
     customers, 
     pages, 
     activeConversationId, 
+    setActiveConversationId,
     sendMessage,
     updateConversationTags
   } = useAppContext();
@@ -33,7 +34,7 @@ export default function ChatWindow() {
 
   if (!activeConversationId || !activeConv || !customer) {
     return (
-      <div className="flex-1 flex flex-col bg-gray-50 items-center justify-center text-gray-400">
+      <div className="hidden md:flex flex-1 flex-col bg-gray-50 items-center justify-center text-gray-400">
         <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
           <Send className="w-8 h-8 text-gray-400 ml-1" />
         </div>
@@ -84,9 +85,18 @@ export default function ChatWindow() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white border-r border-gray-200">
-      <div className="h-16 border-b border-gray-200 flex items-center justify-between px-6 bg-white shrink-0">
+    <div className={cn(
+      "flex-col bg-white border-r border-gray-200",
+      !activeConversationId ? "hidden md:flex flex-1" : "flex w-full md:flex-1"
+    )}>
+      <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 bg-white shrink-0">
         <div className="flex items-center">
+          <button 
+            className="md:hidden p-2 -ml-2 mr-2 text-gray-500 hover:bg-gray-100 rounded-full"
+            onClick={() => setActiveConversationId(null)}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <img 
             src={customer.avatar} 
             alt={customer.name} 

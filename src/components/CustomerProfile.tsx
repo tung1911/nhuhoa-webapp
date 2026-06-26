@@ -14,14 +14,14 @@ export default function CustomerProfile() {
 
   if (!activeConversationId || !activeConv || !customer) {
     return (
-      <div className="w-80 bg-white p-6 flex flex-col shrink-0 border-l border-gray-200">
+      <div className="hidden lg:flex w-80 bg-white p-6 flex-col shrink-0 border-l border-gray-200">
         <MotivationQuote />
       </div>
     );
   }
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 flex flex-col h-full shrink-0 overflow-y-auto">
+    <div className="hidden lg:flex w-80 bg-white border-l border-gray-200 flex-col h-full shrink-0 overflow-y-auto">
       <div className="p-6 flex flex-col items-center border-b border-gray-100">
         <img src={customer.avatar} alt={customer.name} className="w-20 h-20 rounded-full mb-3 shadow-sm border border-gray-100" />
         <h2 className="text-lg font-bold text-gray-800">{customer.name}</h2>
