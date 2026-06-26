@@ -67,16 +67,20 @@ ${isAutoReply ? '- Vì bạn đang trả lời tự động, hãy tập trung xo
     let reply = '';
     
     try {
-      // Dùng openrouter/free làm mặc định để tự động chọn model rảnh rỗi nhất
+      // Dùng mô hình Hermes 3 405B (Rất thông minh và KHÔNG kiểm duyệt gắt gao như Gemini)
       const completion = await openai.chat.completions.create({
-        model: 'openrouter/free',
+        model: 'nousresearch/hermes-3-llama-3.1-405b:free',
         messages: openAIMessages,
         temperature: 0.7,
         max_tokens: 300,
       });
       reply = completion.choices[0]?.message?.content?.trim() || '';
+      
+      if (reply.includes('User Safety:')) {
+        throw new Error("Model refused due to safety filters");
+      }
     } catch (e: any) {
-      // Dự phòng nếu model free bị quá tải (429) hoặc lỗi
+      // Dự phòng nếu model chính bị quá tải (429) hoặc từ chối
       console.warn("Lỗi model chính, thử model dự phòng...", e.message);
       const fallbackCompletion = await openai.chat.completions.create({
         model: 'meta-llama/llama-3.2-3b-instruct:free',
