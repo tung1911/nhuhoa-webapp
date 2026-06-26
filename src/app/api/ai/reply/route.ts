@@ -33,9 +33,22 @@ Lịch sử trò chuyện:
     
     promptText += `\nNhân viên:`;
 
-    const result = await model.generateContent(promptText);
-    const response = await result.response;
-    const text = response.text().trim();
+    let text = '';
+    try {
+      const result = await model.generateContent(promptText);
+      const response = await result.response;
+      text = response.text().trim();
+    } catch (modelError: any) {
+      if (modelError.message && modelError.message.includes('404')) {
+        // Fallback to older gemini-pro
+        const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const result = await fallbackModel.generateContent(promptText);
+        const response = await result.response;
+        text = response.text().trim();
+      } else {
+        throw modelError;
+      }
+    }
 
     return NextResponse.json({ reply: text });
     } catch (error: any) {
